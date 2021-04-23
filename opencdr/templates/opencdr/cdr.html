@@ -1,0 +1,13 @@
+{% extends 'opencdr/base.html' %}
+{% load static %}
+{% block content %}
+
+
+{% for cdr in cdrfile %}
+<a id="filecontent" href="{% url 'convert' %}">{{ cdr }}</a><hr>
+{% endfor %}
+
+<button class="show" onclick="greeting();">show</button>
+<p class=""></p>
+
+{% endblock %}
