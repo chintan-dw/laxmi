@@ -33,42 +33,48 @@ def cdrView(request):
 
 def convert(request):
 
-
-    job = cloudconvert.Job.create(payload={
-        "tasks": {
-            'import-my-file': {
-                'operation': 'import/url',
-                'url': 'http://127.0.0.1:8000/uploads/tiger1.cdr'
-            },
-            'convert-my-file': {
-                'operation': 'convert',
-                "input_format": "cdr",
-                'output_format': 'pdf',
-                "engine": "inkscape",
-                'input': [
-                    'import-my-file'
-                ],
-                "text_to_path": False,
-                "engine_version": "1.0.2"
-            },
-            'export-my-file': {
-                'operation': 'export/url',
-                'input': 'convert-my-file',
-                "inline": False,
-                "archive_multiple_files": False
+    name = True
+    if name:
+        job = cloudconvert.Job.create(payload={
+            "tasks": {
+                'import-my-file': {
+                    'operation': 'import/url',
+                    'url': 'https://github.com/chintan-dw/laxmi/raw/master/static/uploads/tiger1.cdr',
+                    "filename": "tiger1.cdr"
+                },
+                'convert-my-file': {
+                    'operation': 'convert',
+                    "input_format": "cdr",
+                    'output_format': 'pdf',
+                    "engine": "inkscape",
+                    'input': [
+                        'import-my-file'
+                    ],
+                    "text_to_path": False
+                },
+                'export-my-file': {
+                    'operation': 'export/url',
+                    'input': [
+                        'convert-my-file'
+                    ],
+                    "inline": True,
+                    "archive_multiple_files": False
+                }
             }
-        }
-    })
-    print(job)
+        })
+        job = cloudconvert.Job.wait(id=job['id'])
+        for task in job["tasks"]:
+            if task.get("name") == "export-my-file" and task.get("status") == "finished":
+                export_task = task
+                print('here')
+                
+                file = export_task.get("result").get("files")[0]
+                print(file)
+                print(file['url'])
+                cloudconvert.download(filename=file['filename'], url=file['url'])
+    
     context = {
-
+    
     }
     return render(request, 'opencdr/convert.html', context)
 
-
-def apiv1(request):
-    api = cloudconvert.Api('pS5naS553Tz0vi0YpseVoCXpcbf8D97BUAWUNlgGN3MkVwU63fbYGikLqL6EuaZJ')
-    
-
-
-    return render(request, 'opencdr/usingv1.html')
